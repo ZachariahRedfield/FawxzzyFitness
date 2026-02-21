@@ -4,6 +4,12 @@
 
 ### Changed
 WHAT:
+- Refined the new History scroll panel to use the app's dark surface tokens and expanded completed-session fetch depth so long log histories can continue cycling inside the fixed list area.
+WHY:
+- A follow-up merge review flagged visual mismatch against the graphite theme and noted that a low fetch cap undermined the intended long-scroll behavior.
+
+### Changed
+WHAT:
 - History cards now show a subtle sequential “Log #” label and the list sits in a fixed-height scroll area with snap scrolling so large histories cycle smoothly within the panel.
 WHY:
 - This makes log order easier to scan at a glance and keeps the page feeling stationary while users wheel through many entries.
