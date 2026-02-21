@@ -26,3 +26,11 @@ This file is a project-local inbox for suggestions that should be upstreamed int
 - Evidence: src/components/ui/CollapsibleCard.tsx, src/app/routines/[id]/edit/page.tsx
 - Status: Proposed
 
+
+## 2026-02-21 — Use contained snap-scrolling for long mobile card lists
+- Type: Pattern
+- Summary: For long, touch-driven history feeds, keep the page frame stationary and place entries in a bounded inner scroll region with `overscroll-contain` + `snap-y` to improve control and scanability.
+- Suggested Playbook File: patterns/frontend/mobile-list-scrolling.md
+- Rationale: Full-page scrolling with dense cards can feel jumpy and disorienting; contained snap scrolling preserves orientation and gives a wheel-like progression through items.
+- Evidence: src/app/history/page.tsx
+- Status: Proposed
