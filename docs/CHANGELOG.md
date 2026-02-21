@@ -4,6 +4,18 @@
 
 ### Changed
 WHAT:
+- Refined the History list wheel behavior to keep scrolling inside a fixed panel, increased completed-log fetch depth, and aligned card/container styling with the dark surface system while keeping subtle sequential Log # labels.
+WHY:
+- This resolves merge-era UI inconsistencies and makes long history scrolling feel stable, readable, and consistent with the app's visual language.
+
+### Changed
+WHAT:
+- History cards now show a subtle sequential “Log #” label and the list sits in a fixed-height scroll area with snap scrolling so large histories cycle smoothly within the panel.
+WHY:
+- This makes log order easier to scan at a glance and keeps the page feeling stationary while users wheel through many entries.
+
+### Changed
+WHAT:
 - Session screen now loads with the “Add exercise” section collapsed by default so workout logging opens with less vertical clutter.
 - Routine day cards on the Edit Routine screen now label the action as “Tap to edit” instead of “Edit.”
 WHY:
