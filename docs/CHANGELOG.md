@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+### Changed
+WHAT:
+- Added a complete PWA metadata setup with a web manifest, iOS web-app tags, and bundled app icon/startup image assets in `public/`.
+WHY:
+- This enables installable app behavior and a more polished home-screen launch experience across Android and iOS with a minimal, metadata-only change.
+
+### Fixed
+WHAT:
+- Replaced PWA icon/startup PNG assets with text-based SVG icon assets and updated manifest/layout references accordingly.
+WHY:
+- This removes binary-only PR diffs for app metadata assets so GitHub reviews stay readable while preserving install metadata behavior.
+
+### Fixed
+WHAT:
+- Added a repository `.gitattributes` rule that explicitly treats app image assets in `public/` as binary files.
+WHY:
+- This clarifies expected PR behavior for icon/splash assets and reduces confusion when GitHub cannot render line-by-line diffs for PNG files.
+
+### Fixed
+WHAT:
+- Tightened PWA metadata correctness by marking manifest icons as `purpose: "maskable"` and adding the conventional root `public/apple-touch-icon.png` asset.
+WHY:
+- This improves Android adaptive icon handling and keeps iOS home-screen icon discovery aligned with common platform expectations.
+
 ### Fixed
 WHAT:
 - Replaced remaining inline dark-surface `bg-[rgb(var(--surface-2)/...)]` formulas in routine-edit and today UI states with named semantic utilities, and added a dedicated `bg-surface-2-active` utility for pressed states.
