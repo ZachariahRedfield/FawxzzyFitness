@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Changed
+WHAT:
+- History session cards now separate metadata into a dedicated in-card details block and expose explicit split actions for open (`View`) vs manage (`Manage`) flows.
+WHY:
+- This reduces accidental taps from ambiguous card interactions and keeps key context visible while users choose their next action on mobile.
+
 ### Fixed
 WHAT:
 - Added dark-theme utility overrides for `bg-slate-50` and `bg-slate-100` so newly logged set rows no longer render as pale/blank bars in the session logger.
