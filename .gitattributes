@@ -1,0 +1,4 @@
+# Keep expected PWA app images explicitly binary in diffs/merges
+public/*.png binary
+public/icons/*.png binary
+public/splash/*.png binary
