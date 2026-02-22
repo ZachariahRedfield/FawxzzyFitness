@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Changed
+WHAT:
+- History session cards now separate metadata into a dedicated in-card details block and expose explicit split actions for open (`View`) vs manage (`Manage`) flows.
+WHY:
+- This reduces accidental taps from ambiguous card interactions and keeps key context visible while users choose their next action on mobile.
+
 ### Fixed
 WHAT:
 - Replaced remaining inline dark-surface `bg-[rgb(var(--surface-2)/...)]` formulas in routine-edit and today UI states with named semantic utilities, and added a dedicated `bg-surface-2-active` utility for pressed states.
