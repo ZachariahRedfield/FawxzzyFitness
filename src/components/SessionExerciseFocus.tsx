@@ -35,6 +35,7 @@ export function SessionExerciseFocus({
   unitLabel,
   exercises,
   addSetAction,
+  ingestQueuedSetsAction,
   toggleSkipAction,
   removeExerciseAction,
 }: {
@@ -42,6 +43,7 @@ export function SessionExerciseFocus({
   unitLabel: string;
   exercises: SessionExerciseFocusItem[];
   addSetAction: (payload: AddSetPayload) => Promise<AddSetActionResult>;
+  ingestQueuedSetsAction: (payload: { items: Array<AddSetPayload & { clientLogId?: string | null }> }) => Promise<{ ok: boolean; results: AddSetActionResult[] }>;
   toggleSkipAction: (formData: FormData) => Promise<void>;
   removeExerciseAction: (formData: FormData) => Promise<void>;
 }) {
@@ -128,6 +130,7 @@ export function SessionExerciseFocus({
               addSetAction={addSetAction}
               unitLabel={unitLabel}
               initialSets={exercise.initialSets}
+              ingestQueuedSetsAction={ingestQueuedSetsAction}
             />
           </article>
         );

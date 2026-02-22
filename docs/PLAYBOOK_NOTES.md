@@ -75,3 +75,19 @@ This file is a project-local inbox for suggestions that should be upstreamed int
 - Rationale: Offline continuity should preserve usability without implying live freshness; explicit staleness metadata reduces trust errors and support confusion.
 - Evidence: src/lib/offline/today-cache.ts, src/app/today/page.tsx, src/app/today/TodayClientShell.tsx, src/app/today/TodayOfflineBridge.tsx
 - Status: Proposed
+
+## 2026-02-22 — Prefer DB idempotency keys for offline retry ingestion
+- Type: Pattern
+- Summary: For offline queue replay of append-only writes, add an optional client idempotency token column with unique index and use it before fallback app-level dedupe.
+- Suggested Playbook File: patterns/backend/offline-sync-idempotency.md
+- Rationale: Database-enforced idempotency prevents duplicate writes under retry races and keeps reconciliation deterministic across reconnects.
+- Evidence: src/app/session/[id]/page.tsx, src/lib/offline/sync-engine.ts, supabase/migrations/013_sets_client_log_id.sql
+- Status: Proposed
+
+## 2026-02-22 — Preserve queue order across offline retry backoff windows
+- Type: Guardrail
+- Summary: Offline replay queues for append-only user logs should stop processing on the first retry-gated or failed item to keep ingestion order deterministic.
+- Suggested Playbook File: patterns/backend/offline-sync-idempotency.md
+- Rationale: Continuing past a blocked head item allows later events to overtake earlier ones and can violate expected chronology.
+- Evidence: src/lib/offline/sync-engine.ts
+- Status: Proposed

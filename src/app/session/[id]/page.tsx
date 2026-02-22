@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 import { SessionExerciseFocus } from "@/components/SessionExerciseFocus";
@@ -54,6 +55,156 @@ function formatGoalLine(target: DisplayTarget, weightUnit: string | null) {
   return `Goal: ${parts.join(" • ")}`;
 }
 
+
+
+type QueuedSetPayload = {
+  sessionId: string;
+  sessionExerciseId: string;
+  weight: number;
+  reps: number;
+  durationSeconds: number | null;
+  isWarmup: boolean;
+  rpe: number | null;
+  notes: string | null;
+  clientLogId?: string | null;
+};
+
+type QueuedSetIngestResult = {
+  ok: boolean;
+  set?: SetRow;
+  error?: string;
+  deduped?: boolean;
+};
+
+function deterministicSetHash(payload: QueuedSetPayload, userId: string) {
+  const normalized = {
+    userId,
+    sessionId: payload.sessionId,
+    sessionExerciseId: payload.sessionExerciseId,
+    weight: payload.weight,
+    reps: payload.reps,
+    durationSeconds: payload.durationSeconds,
+    isWarmup: payload.isWarmup,
+    rpe: payload.rpe,
+    notes: payload.notes,
+  };
+  return createHash("sha256").update(JSON.stringify(normalized)).digest("hex");
+}
+
+async function ingestQueuedSet(supabase: ReturnType<typeof supabaseServer>, userId: string, payload: QueuedSetPayload): Promise<QueuedSetIngestResult> {
+  if (!payload.sessionId || !payload.sessionExerciseId) {
+    return { ok: false, error: "Missing session info" };
+  }
+
+  if (!Number.isFinite(payload.weight) || !Number.isFinite(payload.reps) || payload.weight < 0 || payload.reps < 0) {
+    return { ok: false, error: "Weight and reps must be 0 or greater" };
+  }
+
+  if (payload.durationSeconds !== null && (!Number.isInteger(payload.durationSeconds) || payload.durationSeconds < 0)) {
+    return { ok: false, error: "Time must be an integer in seconds" };
+  }
+
+  const { count } = await supabase
+    .from("sets")
+    .select("id", { head: true, count: "exact" })
+    .eq("session_exercise_id", payload.sessionExerciseId)
+    .eq("user_id", userId);
+
+  const nextSetIndex = count ?? 0;
+
+  const baseInsert = {
+    session_exercise_id: payload.sessionExerciseId,
+    user_id: userId,
+    set_index: nextSetIndex,
+    weight: payload.weight,
+    reps: payload.reps,
+    duration_seconds: payload.durationSeconds,
+    is_warmup: payload.isWarmup,
+    rpe: payload.rpe,
+    notes: payload.notes,
+  };
+
+  const selectFields = "id, session_exercise_id, user_id, set_index, client_log_id, weight, reps, is_warmup, notes, duration_seconds, rpe";
+
+  if (payload.clientLogId) {
+    const { data: insertedWithClientId, error: withClientIdError } = await supabase
+      .from("sets")
+      .insert({ ...baseInsert, client_log_id: payload.clientLogId })
+      .select(selectFields)
+      .single();
+
+    if (!withClientIdError && insertedWithClientId) {
+      return { ok: true, set: insertedWithClientId as SetRow };
+    }
+
+    if (withClientIdError && withClientIdError.code === "23505") {
+      const { data: existing } = await supabase
+        .from("sets")
+        .select(selectFields)
+        .eq("user_id", userId)
+        .eq("session_exercise_id", payload.sessionExerciseId)
+        .eq("client_log_id", payload.clientLogId)
+        .maybeSingle();
+
+      if (existing) {
+        return { ok: true, set: existing as SetRow, deduped: true };
+      }
+      return { ok: false, error: withClientIdError.message };
+    }
+
+    const missingColumn = withClientIdError?.message?.includes("client_log_id") || withClientIdError?.code === "42703";
+    if (!missingColumn) {
+      return { ok: false, error: withClientIdError?.message ?? "Could not log set" };
+    }
+  }
+
+  const signature = deterministicSetHash(payload, userId);
+  const { data: recentSets, error: recentSetsError } = await supabase
+    .from("sets")
+    .select("id, session_exercise_id, user_id, set_index, weight, reps, is_warmup, notes, duration_seconds, rpe")
+    .eq("user_id", userId)
+    .eq("session_exercise_id", payload.sessionExerciseId)
+    .order("set_index", { ascending: false })
+    .limit(5);
+
+  if (recentSetsError) {
+    return { ok: false, error: recentSetsError.message };
+  }
+
+  const duplicate = (recentSets ?? []).find((setRow) => {
+    const existingHash = deterministicSetHash(
+      {
+        sessionId: payload.sessionId,
+        sessionExerciseId: payload.sessionExerciseId,
+        weight: Number(setRow.weight),
+        reps: Number(setRow.reps),
+        durationSeconds: setRow.duration_seconds,
+        isWarmup: setRow.is_warmup,
+        rpe: setRow.rpe,
+        notes: setRow.notes,
+      },
+      userId,
+    );
+    return existingHash === signature;
+  });
+
+  if (duplicate) {
+    return { ok: true, set: duplicate as SetRow, deduped: true };
+  }
+
+  const { data: insertedSet, error } = await supabase
+    .from("sets")
+    .insert(baseInsert)
+    .select("id, session_exercise_id, user_id, set_index, weight, reps, is_warmup, notes, duration_seconds, rpe")
+    .single();
+
+  if (error || !insertedSet) {
+    return { ok: false, error: error?.message ?? "Could not log set" };
+  }
+
+  return { ok: true, set: insertedSet as SetRow };
+}
+
 type PageProps = {
   params: {
     id: string;
@@ -65,64 +216,34 @@ type PageProps = {
   };
 };
 
-async function addSetAction(payload: {
-  sessionId: string;
-  sessionExerciseId: string;
-  weight: number;
-  reps: number;
-  durationSeconds: number | null;
-  isWarmup: boolean;
-  rpe: number | null;
-  notes: string | null;
-}) {
+async function addSetAction(payload: QueuedSetPayload) {
   "use server";
 
   const user = await requireUser();
   const supabase = supabaseServer();
+  const result = await ingestQueuedSet(supabase, user.id, payload);
 
-  const { sessionId, sessionExerciseId, weight, reps, durationSeconds, isWarmup, rpe, notes } = payload;
-
-  if (!sessionId || !sessionExerciseId) {
-    return { ok: false, error: "Missing session info" };
+  if (!result.ok) {
+    return { ok: false, error: result.error ?? "Could not log set" };
   }
 
-  if (!Number.isFinite(weight) || !Number.isFinite(reps) || weight < 0 || reps < 0) {
-    return { ok: false, error: "Weight and reps must be 0 or greater" };
+  return { ok: true, set: result.set };
+}
+
+async function ingestQueuedSetsAction(payload: { items: QueuedSetPayload[] }) {
+  "use server";
+
+  const user = await requireUser();
+  const supabase = supabaseServer();
+  const items = payload.items ?? [];
+
+  const results: Array<QueuedSetIngestResult> = [];
+  for (const item of items) {
+    const result = await ingestQueuedSet(supabase, user.id, item);
+    results.push(result);
   }
 
-  if (durationSeconds !== null && (!Number.isInteger(durationSeconds) || durationSeconds < 0)) {
-    return { ok: false, error: "Time must be an integer in seconds" };
-  }
-
-  const { count } = await supabase
-    .from("sets")
-    .select("id", { head: true, count: "exact" })
-    .eq("session_exercise_id", sessionExerciseId)
-    .eq("user_id", user.id);
-
-  const nextSetIndex = count ?? 0;
-
-  const { data: insertedSet, error } = await supabase
-    .from("sets")
-    .insert({
-      session_exercise_id: sessionExerciseId,
-      user_id: user.id,
-      set_index: nextSetIndex,
-      weight,
-      reps,
-      duration_seconds: durationSeconds,
-      is_warmup: isWarmup,
-      rpe,
-      notes,
-    })
-    .select("id, session_exercise_id, user_id, set_index, weight, reps, is_warmup, notes, duration_seconds, rpe")
-    .single();
-
-  if (error || !insertedSet) {
-    return { ok: false, error: error?.message ?? "Could not log set" };
-  }
-
-  return { ok: true, set: insertedSet as SetRow };
+  return { ok: true, results };
 }
 
 async function toggleSkipAction(formData: FormData) {
@@ -400,6 +521,7 @@ export default async function SessionPage({ params, searchParams }: PageProps) {
             };
           })}
           addSetAction={addSetAction}
+          ingestQueuedSetsAction={ingestQueuedSetsAction}
           toggleSkipAction={toggleSkipAction}
           removeExerciseAction={removeExerciseAction}
         />

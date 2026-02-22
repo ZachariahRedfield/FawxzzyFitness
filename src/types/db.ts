@@ -26,6 +26,7 @@ export type SetRow = {
   session_exercise_id: string;
   user_id: string;
   set_index: number;
+  client_log_id?: string | null;
   weight: number;
   reps: number;
   is_warmup: boolean;

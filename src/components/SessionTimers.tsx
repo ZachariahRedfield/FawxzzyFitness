@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { SyncEngine } from "@/lib/offline/sync-engine";
 import type { SetRow } from "@/types/db";
 
 type AddSetPayload = {
+  clientLogId?: string | null;
   sessionId: string;
   sessionExerciseId: string;
   weight: number;
@@ -99,12 +101,14 @@ export function SetLoggerCard({
   sessionId,
   sessionExerciseId,
   addSetAction,
+  ingestQueuedSetsAction,
   unitLabel,
   initialSets,
 }: {
   sessionId: string;
   sessionExerciseId: string;
   addSetAction: (payload: AddSetPayload) => Promise<AddSetActionResult>;
+  ingestQueuedSetsAction: (payload: { items: AddSetPayload[] }) => Promise<{ ok: boolean; results: AddSetActionResult[] }>;
   unitLabel: string;
   initialSets: SetRow[];
 }) {
@@ -120,6 +124,48 @@ export function SetLoggerCard({
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [tapReps, setTapReps] = useState(0);
   const repsInputRef = useRef<HTMLInputElement | null>(null);
+
+  const syncEngineRef = useRef<SyncEngine<AddSetPayload> | null>(null);
+
+  useEffect(() => {
+    const engine = new SyncEngine<AddSetPayload>({
+      processItem: async (item) => {
+        const response = await ingestQueuedSetsAction({ items: [item.payload] });
+        const result = response.results?.[0];
+        if (!response.ok || !result?.ok) {
+          return { ok: false as const, error: result?.error ?? "Could not sync set", retryable: true };
+        }
+
+        setSets((current) => {
+          const pendingIndex = current.findIndex((entry) => entry.id === item.id);
+          if (pendingIndex === -1) {
+            return current;
+          }
+          const next = [...current];
+          next[pendingIndex] = result.set!;
+          return next;
+        });
+
+        return { ok: true as const };
+      },
+      onQueueChange: (queue) => {
+        const failed = queue.find((item) => item.state === "failed");
+        if (failed?.lastError) {
+          setError(failed.lastError);
+        }
+      },
+      tickIntervalMs: 7_500,
+      maxBackoffMs: 45_000,
+    });
+
+    syncEngineRef.current = engine;
+    engine.start();
+
+    return () => {
+      engine.stop();
+      syncEngineRef.current = null;
+    };
+  }, [ingestQueuedSetsAction]);
 
   useEffect(() => {
     if (!isRunning) {
@@ -194,6 +240,28 @@ export function SetLoggerCard({
     });
 
     if (!result.ok || !result.set) {
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        syncEngineRef.current?.enqueue({
+          sessionId,
+          sessionExerciseId,
+          weight: parsedWeight,
+          reps: parsedReps,
+          durationSeconds: parsedDuration,
+          isWarmup,
+          rpe: parsedRpe,
+          notes: null,
+          clientLogId: pendingId,
+        }, pendingId);
+        setError("Offline: set queued for sync.");
+        setDurationSeconds("");
+        setWeight(String(parsedWeight));
+        setReps(String(parsedReps));
+        setRpe(parsedRpe === null ? "" : String(parsedRpe));
+        repsInputRef.current?.focus();
+        setIsSubmitting(false);
+        return;
+      }
+
       setSets((current) => current.filter((item) => item.id !== pendingId));
       setError(result.error ?? "Could not log set.");
       setIsSubmitting(false);
