@@ -4,6 +4,12 @@
 
 ### Changed
 WHAT:
+- Added a client-safe haptics utility and wired consistent vibration feedback into session logging, session save, and exercise add/remove/skip interactions.
+WHY:
+- Lightweight tactile feedback makes key workout actions feel more responsive on mobile while safely no-oping on unsupported devices.
+
+### Changed
+WHAT:
 - Added a lightweight offline/sync status badge component used in Session controls and Today cards to surface connection + queue state (`Offline`, `Saved locally`, `Syncing…`) with a brief `All changes synced` confirmation after queue drain.
 WHY:
 - Users logging workouts on mobile need low-noise confidence about whether entries are local-only, actively syncing, or fully synced without leaving the current flow.

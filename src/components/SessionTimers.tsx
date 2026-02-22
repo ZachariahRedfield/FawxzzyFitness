@@ -8,6 +8,7 @@ import {
   type SetLogQueueItem,
 } from "@/lib/offline/set-log-queue";
 import { createSetLogSyncEngine } from "@/lib/offline/sync-engine";
+import { triggerErrorHaptic, triggerPressHaptic, triggerSuccessHaptic } from "@/lib/haptics";
 
 type AddSetPayload = {
   sessionId: string;
@@ -226,6 +227,7 @@ export function SetLoggerCard({
   }, [elapsedSeconds, tapReps]);
 
   async function handleLogSet() {
+    triggerPressHaptic();
     const parsedWeight = Number(weight);
     const parsedReps = Number(reps);
     const parsedDuration = durationSeconds.trim() ? Number(durationSeconds) : null;
@@ -233,16 +235,19 @@ export function SetLoggerCard({
 
     if (!Number.isFinite(parsedWeight) || !Number.isFinite(parsedReps) || parsedWeight < 0 || parsedReps < 0) {
       setError("Weight and reps must be 0 or greater.");
+      triggerErrorHaptic();
       return;
     }
 
     if (parsedDuration !== null && (!Number.isInteger(parsedDuration) || parsedDuration < 0)) {
       setError("Time must be an integer in seconds.");
+      triggerErrorHaptic();
       return;
     }
 
     if (parsedRpe !== null && (!Number.isFinite(parsedRpe) || parsedRpe < 0)) {
       setError("RPE must be 0 or greater.");
+      triggerErrorHaptic();
       return;
     }
 
@@ -297,6 +302,11 @@ export function SetLoggerCard({
         ),
       );
       setError(queued ? "Offline: set queued for sync." : "Offline: unable to save set locally.");
+      if (queued) {
+        triggerSuccessHaptic();
+      } else {
+        triggerErrorHaptic();
+      }
       setIsSubmitting(false);
       return;
     }
@@ -341,11 +351,17 @@ export function SetLoggerCard({
           ),
         );
         setError(queued ? "Could not reach server. Set queued for sync." : result.error ?? "Could not log set.");
+        if (queued) {
+          triggerSuccessHaptic();
+        } else {
+          triggerErrorHaptic();
+        }
         setIsSubmitting(false);
         return;
       }
 
       setSets((current) => current.map((item) => (item.id === pendingId ? result.set! : item)));
+      triggerSuccessHaptic();
     } catch {
       const queued = await enqueueSetLog({
         sessionId,
@@ -373,6 +389,11 @@ export function SetLoggerCard({
         ),
       );
       setError(queued ? "Request failed. Set queued for sync." : "Could not log set.");
+      if (queued) {
+        triggerSuccessHaptic();
+      } else {
+        triggerErrorHaptic();
+      }
       setIsSubmitting(false);
       return;
     }

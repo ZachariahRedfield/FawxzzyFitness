@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { SessionExerciseFocus } from "@/components/SessionExerciseFocus";
 import { BackButton } from "@/components/ui/BackButton";
 import { SessionHeaderControls } from "@/components/SessionHeaderControls";
+import { HapticSubmitButton } from "@/components/HapticSubmitButton";
 import { ExercisePicker } from "@/components/ExercisePicker";
 import { createCustomExerciseAction, deleteCustomExerciseAction, renameCustomExerciseAction } from "@/app/actions/exercises";
 import { requireUser } from "@/lib/auth";
@@ -473,7 +474,7 @@ export default async function SessionPage({ params, searchParams }: PageProps) {
           <form action={addExerciseAction} className="space-y-2">
             <input type="hidden" name="sessionId" value={params.id} />
             <ExercisePicker exercises={exerciseOptions} name="exerciseId" initialSelectedId={searchParams?.exerciseId} />
-            <button type="submit" className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">Add</button>
+            <HapticSubmitButton className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">Add</HapticSubmitButton>
           </form>
 
           <form action={createCustomExerciseAction} className="space-y-2 border-t border-slate-200 pt-3">
@@ -484,7 +485,7 @@ export default async function SessionPage({ params, searchParams }: PageProps) {
               <input name="primaryMuscle" placeholder="Primary muscle (optional)" className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
               <input name="equipment" placeholder="Equipment (optional)" className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
             </div>
-            <button type="submit" className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">Save Custom Exercise</button>
+            <HapticSubmitButton className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">Save Custom Exercise</HapticSubmitButton>
           </form>
 
           {customExercises.length > 0 ? (

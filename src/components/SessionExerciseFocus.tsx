@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SetLoggerCard } from "@/components/SessionTimers";
 import type { SetRow } from "@/types/db";
+import { triggerPressHaptic } from "@/lib/haptics";
 
 type AddSetPayload = {
   sessionId: string;
@@ -84,7 +85,10 @@ export function SessionExerciseFocus({
             <li key={exercise.id}>
               <button
                 type="button"
-                onClick={() => setSelectedExerciseId(exercise.id)}
+                onClick={() => {
+                  triggerPressHaptic();
+                  setSelectedExerciseId(exercise.id);
+                }}
                 className="w-full rounded-md bg-white p-3 text-left shadow-sm"
               >
                 <div className="flex items-center justify-between gap-2">
@@ -103,7 +107,10 @@ export function SessionExerciseFocus({
         <div className="rounded-md bg-white p-3 shadow-sm">
           <div className="flex items-center justify-between gap-2">
             <p className="text-sm font-semibold">{selectedExercise?.name ?? "Exercise"}</p>
-            <button type="button" onClick={() => setSelectedExerciseId(null)} className="rounded-md border border-slate-300 px-2 py-1 text-xs">Close</button>
+            <button type="button" onClick={() => {
+              triggerPressHaptic();
+              setSelectedExerciseId(null);
+            }} className="rounded-md border border-slate-300 px-2 py-1 text-xs">Close</button>
           </div>
         </div>
       )}
@@ -126,14 +133,28 @@ export function SessionExerciseFocus({
                   <input type="hidden" name="sessionId" value={sessionId} />
                   <input type="hidden" name="sessionExerciseId" value={exercise.id} />
                   <input type="hidden" name="nextSkipped" value={String(!exercise.isSkipped)} />
-                  <button type="submit" className="rounded-md border border-slate-300 px-2 py-1 text-xs">
+                  <button
+                    type="submit"
+                    onClick={() => {
+                      triggerPressHaptic();
+                    }}
+                    className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                  >
                     {exercise.isSkipped ? "Unskip" : "Skip"}
                   </button>
                 </form>
                 <form action={removeExerciseAction}>
                   <input type="hidden" name="sessionId" value={sessionId} />
                   <input type="hidden" name="sessionExerciseId" value={exercise.id} />
-                  <button type="submit" className="rounded-md border border-red-200 px-2 py-1 text-xs text-red-700">Remove</button>
+                  <button
+                    type="submit"
+                    onClick={() => {
+                      triggerPressHaptic();
+                    }}
+                    className="rounded-md border border-red-200 px-2 py-1 text-xs text-red-700"
+                  >
+                    Remove
+                  </button>
                 </form>
               </div>
             </div>

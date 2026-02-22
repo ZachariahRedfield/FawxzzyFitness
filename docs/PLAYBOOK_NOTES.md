@@ -97,3 +97,11 @@ This file is a project-local inbox for suggestions that should be upstreamed int
 - Rationale: Users should not lose training data during transient failures, and queued-state visibility avoids false confidence about server persistence.
 - Evidence: src/lib/offline/set-log-queue.ts, src/components/SessionTimers.tsx
 - Status: Proposed
+
+## 2026-02-22 — Centralize client-safe haptics behind an explicit utility
+- Type: Pattern
+- Summary: Route all vibration feedback through a shared `src/lib/haptics.ts` helper that no-ops when `navigator.vibrate` is unavailable, and trigger it only from user-initiated actions.
+- Suggested Playbook File: patterns/frontend/mobile-interaction-feedback.md
+- Rationale: A single helper keeps tactile patterns consistent and avoids runtime errors or noisy feedback from render/state churn.
+- Evidence: src/lib/haptics.ts, src/components/SessionTimers.tsx, src/components/SessionHeaderControls.tsx, src/components/SessionExerciseFocus.tsx, src/components/HapticSubmitButton.tsx, src/app/session/[id]/page.tsx
+- Status: Proposed
