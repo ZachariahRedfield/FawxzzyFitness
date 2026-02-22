@@ -280,3 +280,9 @@ WHY:
 
 ### Notes
 - Manual test checklist: login → routines (create/select active) → today (verify day name/exercises) → Start Session (verify seeded exercise order) → edit routine cycle length up/down → switch active routine and confirm Today updates immediately.
+
+### Changed
+WHAT:
+- Added a reusable tap-feedback interaction style and applied it across session control buttons (header save, timer controls, exercise focus actions, and session add/remove exercise controls) with active press scale/opacity feedback and fast transitions.
+WHY:
+- Touch-first interactions now provide immediate, consistent press feedback across core workout controls while preserving keyboard-visible focus states for accessibility.

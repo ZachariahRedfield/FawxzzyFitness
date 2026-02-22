@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SetLoggerCard } from "@/components/SessionTimers";
+import { tapFeedbackClassName } from "@/components/ui/tap-feedback";
 import type { SetRow } from "@/types/db";
 
 type AddSetPayload = {
@@ -82,11 +83,11 @@ export function SessionExerciseFocus({
         <ul className="space-y-2">
           {exercises.map((exercise) => (
             <li key={exercise.id}>
-              <button
-                type="button"
-                onClick={() => setSelectedExerciseId(exercise.id)}
-                className="w-full rounded-md bg-white p-3 text-left shadow-sm"
-              >
+                <button
+                  type="button"
+                  onClick={() => setSelectedExerciseId(exercise.id)}
+                  className={`w-full rounded-md bg-white p-3 text-left shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25 ${tapFeedbackClassName}`}
+                >
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-semibold">{exercise.name}</p>
                   <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
@@ -103,7 +104,13 @@ export function SessionExerciseFocus({
         <div className="rounded-md bg-white p-3 shadow-sm">
           <div className="flex items-center justify-between gap-2">
             <p className="text-sm font-semibold">{selectedExercise?.name ?? "Exercise"}</p>
-            <button type="button" onClick={() => setSelectedExerciseId(null)} className="rounded-md border border-slate-300 px-2 py-1 text-xs">Close</button>
+            <button
+              type="button"
+              onClick={() => setSelectedExerciseId(null)}
+              className={`rounded-md border border-slate-300 px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25 ${tapFeedbackClassName}`}
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
@@ -126,14 +133,22 @@ export function SessionExerciseFocus({
                   <input type="hidden" name="sessionId" value={sessionId} />
                   <input type="hidden" name="sessionExerciseId" value={exercise.id} />
                   <input type="hidden" name="nextSkipped" value={String(!exercise.isSkipped)} />
-                  <button type="submit" className="rounded-md border border-slate-300 px-2 py-1 text-xs">
+                  <button
+                    type="submit"
+                    className={`rounded-md border border-slate-300 px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25 ${tapFeedbackClassName}`}
+                  >
                     {exercise.isSkipped ? "Unskip" : "Skip"}
                   </button>
                 </form>
                 <form action={removeExerciseAction}>
                   <input type="hidden" name="sessionId" value={sessionId} />
                   <input type="hidden" name="sessionExerciseId" value={exercise.id} />
-                  <button type="submit" className="rounded-md border border-red-200 px-2 py-1 text-xs text-red-700">Remove</button>
+                  <button
+                    type="submit"
+                    className={`rounded-md border border-red-200 px-2 py-1 text-xs text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-200 ${tapFeedbackClassName}`}
+                  >
+                    Remove
+                  </button>
                 </form>
               </div>
             </div>
