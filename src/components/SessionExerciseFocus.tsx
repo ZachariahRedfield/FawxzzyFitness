@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SetLoggerCard } from "@/components/SessionTimers";
+import { tapFeedbackClassName } from "@/components/ui/tap-feedback";
 import type { SetRow } from "@/types/db";
 
 type AddSetPayload = {
@@ -65,6 +66,7 @@ export function SessionExerciseFocus({
   removeExerciseAction: (formData: FormData) => Promise<void>;
 }) {
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
+  const [removingExerciseIds, setRemovingExerciseIds] = useState<string[]>([]);
   const focusedRef = useRef<HTMLElement | null>(null);
   const selectedExercise = useMemo(
     () => exercises.find((exercise) => exercise.id === selectedExerciseId) ?? null,
@@ -76,34 +78,71 @@ export function SessionExerciseFocus({
     focusedRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [selectedExerciseId]);
 
+  async function handleRemoveExercise(sessionExerciseId: string) {
+    if (removingExerciseIds.includes(sessionExerciseId)) {
+      return;
+    }
+
+    setRemovingExerciseIds((current) => [...current, sessionExerciseId]);
+
+    const formData = new FormData();
+    formData.set("sessionId", sessionId);
+    formData.set("sessionExerciseId", sessionExerciseId);
+
+    try {
+      await removeExerciseAction(formData);
+      if (selectedExerciseId === sessionExerciseId) {
+        setSelectedExerciseId(null);
+      }
+    } finally {
+      setRemovingExerciseIds((current) => current.filter((id) => id !== sessionExerciseId));
+    }
+  }
+
   return (
     <div className="space-y-3">
       {selectedExerciseId === null ? (
         <ul className="space-y-2">
-          {exercises.map((exercise) => (
-            <li key={exercise.id}>
-              <button
-                type="button"
-                onClick={() => setSelectedExerciseId(exercise.id)}
-                className="w-full rounded-md bg-white p-3 text-left shadow-sm"
+          {exercises.map((exercise) => {
+            const isRemoving = removingExerciseIds.includes(exercise.id);
+
+            return (
+              <li
+                key={exercise.id}
+                className={[
+                  "origin-top transition-all duration-150 motion-reduce:transition-none",
+                  isRemoving ? "max-h-0 scale-[0.98] opacity-0" : "max-h-40 scale-100 opacity-100",
+                ].join(" ")}
               >
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-semibold">{exercise.name}</p>
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
-                    {exercise.loggedSetCount} set{exercise.loggedSetCount === 1 ? "" : "s"}
-                  </span>
-                </div>
-                {exercise.goalText ? <p className="text-xs text-slate-500">{exercise.goalText}</p> : null}
-                {exercise.isSkipped ? <p className="mt-1 text-xs text-amber-700">Skipped</p> : null}
-              </button>
-            </li>
-          ))}
+                <button
+                  type="button"
+                  onClick={() => setSelectedExerciseId(exercise.id)}
+                  className={`w-full rounded-md bg-white p-3 text-left shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25 ${tapFeedbackClassName}`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-semibold">{exercise.name}</p>
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
+                      {exercise.loggedSetCount} set{exercise.loggedSetCount === 1 ? "" : "s"}
+                    </span>
+                  </div>
+                  {exercise.goalText ? <p className="text-xs text-slate-500">{exercise.goalText}</p> : null}
+                  {exercise.isSkipped ? <p className="mt-1 text-xs text-amber-700">Skipped</p> : null}
+                </button>
+              </li>
+            );
+          })}
         </ul>
       ) : (
         <div className="rounded-md bg-white p-3 shadow-sm">
           <div className="flex items-center justify-between gap-2">
             <p className="text-sm font-semibold">{selectedExercise?.name ?? "Exercise"}</p>
-            <button type="button" onClick={() => setSelectedExerciseId(null)} className="rounded-md border border-slate-300 px-2 py-1 text-xs">Close</button>
+            <button
+              type="button"
+              onClick={() => setSelectedExerciseId(null)}
+              className={`rounded-md border border-slate-300 px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25 ${tapFeedbackClassName}`}
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
@@ -126,15 +165,21 @@ export function SessionExerciseFocus({
                   <input type="hidden" name="sessionId" value={sessionId} />
                   <input type="hidden" name="sessionExerciseId" value={exercise.id} />
                   <input type="hidden" name="nextSkipped" value={String(!exercise.isSkipped)} />
-                  <button type="submit" className="rounded-md border border-slate-300 px-2 py-1 text-xs">
+                  <button
+                    type="submit"
+                    className={`rounded-md border border-slate-300 px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25 ${tapFeedbackClassName}`}
+                  >
                     {exercise.isSkipped ? "Unskip" : "Skip"}
                   </button>
                 </form>
-                <form action={removeExerciseAction}>
-                  <input type="hidden" name="sessionId" value={sessionId} />
-                  <input type="hidden" name="sessionExerciseId" value={exercise.id} />
-                  <button type="submit" className="rounded-md border border-red-200 px-2 py-1 text-xs text-red-700">Remove</button>
-                </form>
+                <button
+                  type="button"
+                  onClick={() => void handleRemoveExercise(exercise.id)}
+                  disabled={removingExerciseIds.includes(exercise.id)}
+                  className={`rounded-md border border-red-200 px-2 py-1 text-xs text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-200 disabled:opacity-50 ${tapFeedbackClassName}`}
+                >
+                  {removingExerciseIds.includes(exercise.id) ? "Removing..." : "Remove"}
+                </button>
               </div>
             </div>
 

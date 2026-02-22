@@ -97,3 +97,11 @@ This file is a project-local inbox for suggestions that should be upstreamed int
 - Rationale: Users should not lose training data during transient failures, and queued-state visibility avoids false confidence about server persistence.
 - Evidence: src/lib/offline/set-log-queue.ts, src/components/SessionTimers.tsx
 - Status: Proposed
+
+## 2026-02-22 — Standardize mobile tap feedback for session controls
+- Type: Pattern
+- Summary: Use a shared tap-feedback utility (`active:scale-[0.98]` + slight `active:opacity` + short transition) on touch-heavy button controls, while keeping `focus-visible` rings intact.
+- Suggested Playbook File: patterns/frontend/mobile-interactions.md
+- Rationale: Consistent press feedback reduces perceived latency and mis-taps on mobile without replacing keyboard accessibility affordances.
+- Evidence: src/components/ui/tap-feedback.ts, src/components/SessionTimers.tsx, src/components/SessionExerciseFocus.tsx, src/components/SessionHeaderControls.tsx, src/app/session/[id]/page.tsx
+- Status: Proposed
