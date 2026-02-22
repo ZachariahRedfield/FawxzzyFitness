@@ -253,3 +253,14 @@ WHY:
 
 ### Notes
 - Manual test checklist: login → routines (create/select active) → today (verify day name/exercises) → Start Session (verify seeded exercise order) → edit routine cycle length up/down → switch active routine and confirm Today updates immediately.
+
+### Added
+- Session logging now includes an offline sync coordinator and queued set ingestion flow so set entries can be retried in order when connectivity returns.
+- Set ingestion now supports optional client idempotency tokens (`client_log_id`) with a recommended schema migration to prevent duplicate inserts during retries.
+
+### Changed
+- Session server actions now support batch queued-set ingestion using authenticated server-only writes, preserving existing RLS-safe boundaries.
+
+### Why
+- Improve reliability for intermittent connectivity while keeping set ingestion append-only and deterministic.
+- Prevent duplicate set rows during retry loops by preferring database-level idempotency and providing an app-level dedupe fallback when migration rollout lags.
