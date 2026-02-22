@@ -1,6 +1,7 @@
-import Link from "next/link";
+
 import { revalidatePath } from "next/cache";
 import { AppNav } from "@/components/AppNav";
+import { RoutinesDebugLink, RoutinesDebugSubmitButton } from "@/components/RoutinesNavigationDebug";
 import { Glass } from "@/components/ui/Glass";
 import { requireUser } from "@/lib/auth";
 import { ensureProfile } from "@/lib/profile";
@@ -122,9 +123,9 @@ export default async function RoutinesPage() {
         <p className="text-sm text-slate-600">Timezone: {profile.timezone}</p>
       </div>
 
-      <Link href="/routines/new" className="block rounded-md bg-accent px-4 py-3 text-center text-white transition-colors hover:bg-accent-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25">
+      <RoutinesDebugLink href="/routines/new" source="routines-create" className="block rounded-md bg-accent px-4 py-3 text-center text-white transition-colors hover:bg-accent-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25">
         Create Routine
-      </Link>
+      </RoutinesDebugLink>
 
       <ul className="space-y-2">
         {routines.map((routine) => {
@@ -138,31 +139,33 @@ export default async function RoutinesPage() {
                   <p className="text-xs text-slate-600">{routine.cycle_length_days} day cycle · {routine.weight_unit}</p>
                 </div>
                 <div className="flex gap-3 text-sm">
-                  <Link href={`/routines/${routine.id}/edit`} className="text-slate-700 underline">
+                  <RoutinesDebugLink href={`/routines/${routine.id}/edit`} source="routines-edit" className="text-slate-700 underline">
                     Edit
-                  </Link>
+                  </RoutinesDebugLink>
                   <form action={deleteRoutineAction}>
                     <input type="hidden" name="routineId" value={routine.id} />
-                    <button
+                    <RoutinesDebugSubmitButton
                       type="submit"
+                      source="routines-delete"
                       className="appearance-none border-0 bg-transparent p-0 text-red-600 underline transition-colors hover:text-red-700 focus:outline-none focus-visible:text-red-700"
                     >
                       Delete
-                    </button>
+                    </RoutinesDebugSubmitButton>
                   </form>
                 </div>
               </div>
               <form action={setActiveRoutineAction}>
                 <input type="hidden" name="routineId" value={routine.id} />
-                <button
+                <RoutinesDebugSubmitButton
                   type="submit"
+                  source={isActive ? "routines-active-disabled" : "routines-set-active"}
                   disabled={isActive}
                   className={`w-full rounded-md px-3 py-2 text-sm ${
                     isActive ? "border border-accent bg-accent/10 font-semibold text-accent" : "border border-slate-300 text-slate-700"
                   }`}
                 >
                   {isActive ? "Active" : "Set Active"}
-                </button>
+                </RoutinesDebugSubmitButton>
               </form>
             </Glass>
           );

@@ -12,6 +12,21 @@ type NavLink = {
   Icon: (props: SVGProps<SVGSVGElement>) => JSX.Element;
 };
 
+
+function debugNav(source: string, href: string) {
+  if (process.env.NODE_ENV !== "development") {
+    return;
+  }
+
+  // Standalone diagnostics: if this click leads to Safari chrome, a full reload or out-of-scope URL likely occurred.
+  console.log("[PWA nav]", {
+    source,
+    href,
+    currentHref: window.location.href,
+    navigationType: (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined)?.type ?? "unknown",
+  });
+}
+
 const links: NavLink[] = [
   {
     href: "/today",
@@ -84,6 +99,7 @@ export function AppNav() {
               href={link.href}
               prefetch
               aria-current={isActive ? "page" : undefined}
+              onClick={() => debugNav("bottom-tab", link.href)}
               className={`group relative rounded-[var(--radius-sm)] px-2 py-2 transition-colors ${
                 isActive
                   ? "bg-accent/16 font-semibold text-accent"

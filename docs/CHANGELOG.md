@@ -4,6 +4,15 @@
 
 ### Fixed
 WHAT:
+- Added temporary iOS PWA diagnostics visible in development (or with `?pwaDebug=1`) so pages clearly report standalone/display-mode state, referrer, URL, and navigation type during A2HS testing.
+- Added dev-only navigation diagnostics for bottom tabs and routines actions while keeping internal navigation on Next routing primitives.
+- Added an app manifest route with root `start_url`/`scope` and `standalone` display, and ensured Apple web-app metadata is present in root layout metadata.
+WHY:
+- Some A2HS flows intermittently showed Safari chrome; we needed on-device signal to identify whether routes were leaving standalone context due to full reloads, out-of-scope URLs, or browser-context transitions.
+- Root-level manifest and Apple meta settings reduce risk of route scope mismatches and improve consistency of standalone launches across iOS paths.
+
+### Fixed
+WHAT:
 - Retuned the glass visual tokens to reduce harsh glare: softer sheen intensity, lower blur/saturation levels, calmer elevation, and slightly denser tint for dark-mode readability.
 - Adjusted shared glass highlight behavior to use a subtle edge-light treatment instead of a strong full-surface hotspot.
 WHY:
