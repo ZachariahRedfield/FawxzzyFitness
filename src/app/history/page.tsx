@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { revalidatePath } from "next/cache";
+import { revalidateHistoryViews } from "@/lib/revalidation";
 import { AppNav } from "@/components/AppNav";
 import { Glass } from "@/components/ui/Glass";
 import { listShellClasses } from "@/components/ui/listShellClasses";
@@ -54,7 +54,7 @@ async function deleteSessionAction(formData: FormData) {
     throw new Error(error.message);
   }
 
-  revalidatePath("/history");
+  revalidateHistoryViews();
 }
 
 

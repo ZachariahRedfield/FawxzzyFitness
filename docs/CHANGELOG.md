@@ -5,6 +5,13 @@
 
 ### Changed
 WHAT:
+- Centralized routine/history/session revalidation calls behind tiny shared helpers (`revalidateRoutinesViews`, `revalidateHistoryViews`, `revalidateSessionViews`) while preserving existing invalidation coverage.
+WHY:
+- Consolidating invalidation path strings reduces duplication and lowers drift risk when maintaining mutation flows across related screens.
+
+
+### Changed
+WHAT:
 - Added a shared list-shell class token set and applied it to both Routines and History list surfaces to standardize mobile scroll viewport sizing, snap behavior, and card shell spacing.
 - Increased list row action tap-target sizing for routine/history card controls using the shared shell tokens.
 WHY:

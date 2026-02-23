@@ -159,3 +159,12 @@ This file is a project-local inbox for suggestions that should be upstreamed int
 - Rationale: Mixed return/redirect error semantics increase UI adapter complexity and make action behavior less deterministic across features.
 - Evidence: src/lib/action-result.ts, src/app/session/[id]/actions.ts, src/components/SessionTimers.tsx, src/lib/offline/sync-engine.ts
 - Status: Proposed
+
+
+## 2026-02-23 — Centralize route revalidation via domain helpers
+- Type: Guardrail
+- Summary: Extract commonly paired route revalidations (session, history, routines/today) into tiny domain helpers so server actions call intent-level invalidation helpers instead of repeating path strings.
+- Suggested Playbook File: patterns/cache-and-revalidation.md
+- Rationale: Shared helpers keep invalidation coverage deterministic during refactors and reduce string drift across mutation entry points.
+- Evidence: src/lib/revalidation.ts, src/app/session/[id]/actions.ts, src/app/actions/history.ts, src/app/routines/page.tsx
+- Status: Proposed

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateHistoryViews } from "@/lib/revalidation";
 import { requireUser } from "@/lib/auth";
 import { supabaseServer } from "@/lib/supabase/server";
 
@@ -34,7 +35,7 @@ export async function updateLogMetaAction(payload: { logId: string; dayNameOverr
     return { ok: false, error: error.message };
   }
 
-  revalidatePath("/history");
+  revalidateHistoryViews();
   revalidatePath(`/history/${logId}`);
   return { ok: true };
 }
@@ -62,7 +63,7 @@ export async function updateLogExerciseNotesAction(payload: { logId: string; log
     return { ok: false, error: error.message };
   }
 
-  revalidatePath("/history");
+  revalidateHistoryViews();
   revalidatePath(`/history/${logId}`);
   return { ok: true };
 }
