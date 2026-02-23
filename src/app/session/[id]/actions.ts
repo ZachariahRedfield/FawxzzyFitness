@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
+import { revalidateHistoryViews, revalidateSessionViews } from "@/lib/revalidation";
 import { supabaseServer } from "@/lib/supabase/server";
 import type { ActionResult } from "@/lib/action-result";
 import type { SetRow } from "@/types/db";
@@ -169,7 +170,7 @@ export async function toggleSkipAction(formData: FormData): Promise<ActionResult
     return { ok: false, error: error.message };
   }
 
-  revalidatePath(`/session/${sessionId}`);
+  revalidateSessionViews(sessionId);
   return { ok: true };
 }
 
@@ -202,7 +203,7 @@ export async function addExerciseAction(formData: FormData): Promise<ActionResul
     return { ok: false, error: error.message };
   }
 
-  revalidatePath(`/session/${sessionId}`);
+  revalidateSessionViews(sessionId);
   return { ok: true };
 }
 
@@ -228,7 +229,7 @@ export async function removeExerciseAction(formData: FormData): Promise<ActionRe
     return { ok: false, error: error.message };
   }
 
-  revalidatePath(`/session/${sessionId}`);
+  revalidateSessionViews(sessionId);
   return { ok: true };
 }
 
@@ -281,6 +282,6 @@ export async function saveSessionAction(formData: FormData): Promise<ActionResul
   }
 
   revalidatePath("/today");
-  revalidatePath("/history");
+  revalidateHistoryViews();
   return { ok: true };
 }

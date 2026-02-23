@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
+import { revalidateRoutinesViews } from "@/lib/revalidation";
 import { notFound, redirect } from "next/navigation";
 import { RoutineBackButton } from "@/components/RoutineBackButton";
 import { CollapsibleCard } from "@/components/ui/CollapsibleCard";
@@ -156,9 +157,8 @@ async function updateRoutineAction(formData: FormData) {
     }
   }
 
-  revalidatePath("/routines");
+  revalidateRoutinesViews();
   revalidatePath(`/routines/${routineId}/edit`);
-  revalidatePath("/today");
   redirect("/routines");
 }
 
