@@ -9,6 +9,7 @@
 ## Architectural Principles
 - Keep server/client boundaries explicit and stable.
 - Route all database writes through server actions.
+- Standardize mutation server-action results on `ActionResult<T> = { ok: true, data?: T } | { ok: false, error: string }`; reserve redirects for navigation outcomes only.
 - Require authenticated server context for protected mutations (`requireUser()` + `supabaseServer()`).
 - Preserve RLS as the primary data-access safety boundary.
 - Favor the smallest clear change over new abstraction layers.

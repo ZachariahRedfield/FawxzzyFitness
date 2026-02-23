@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { SetRow } from "@/types/db";
+import type { ActionResult } from "@/lib/action-result";
 import {
   enqueueSetLog,
   readQueuedSetLogsBySessionExerciseId,
@@ -21,12 +22,6 @@ type AddSetPayload = {
   rpe: number | null;
   notes: string | null;
   clientLogId?: string;
-};
-
-type AddSetActionResult = {
-  ok: boolean;
-  error?: string;
-  set?: SetRow;
 };
 
 function formatSeconds(totalSeconds: number) {
@@ -115,10 +110,10 @@ export function SetLoggerCard({
 }: {
   sessionId: string;
   sessionExerciseId: string;
-  addSetAction: (payload: AddSetPayload) => Promise<AddSetActionResult>;
+  addSetAction: (payload: AddSetPayload) => Promise<ActionResult<{ set: SetRow }>>;
   syncQueuedSetLogsAction: (payload: {
     items: SetLogQueueItem[];
-  }) => Promise<{ ok: boolean; results: Array<{ queueItemId: string; ok: boolean; serverSetId?: string; error?: string }> }>;
+  }) => Promise<ActionResult<{ results: Array<{ queueItemId: string; ok: boolean; serverSetId?: string; error?: string }> }>>;
   unitLabel: string;
   initialSets: SetRow[];
 }) {
@@ -178,7 +173,25 @@ export function SetLoggerCard({
 
   useEffect(() => {
     const engine = createSetLogSyncEngine({
-      syncSetLogsAction: syncQueuedSetLogsAction,
+      syncSetLogsAction: async (payload) => {
+        const response = await syncQueuedSetLogsAction(payload);
+
+        if (!response.ok) {
+          return {
+            ok: false,
+            results: payload.items.map((item) => ({
+              queueItemId: item.id,
+              ok: false,
+              error: response.error,
+            })),
+          };
+        }
+
+        return {
+          ok: true,
+          results: response.data?.results ?? [],
+        };
+      },
       onQueueUpdate: () => {
         void readQueuedSetLogsBySessionExerciseId(sessionExerciseId).then((queued) => {
           setSets((current) =>
@@ -369,7 +382,7 @@ export function SetLoggerCard({
         notes: null,
       });
 
-      if (!result.ok || !result.set) {
+      if (!result.ok || !result.data?.set) {
         const queued = await enqueueSetLog({
           sessionId,
           sessionExerciseId,
@@ -396,7 +409,8 @@ export function SetLoggerCard({
               : item,
           ),
         );
-        const message = queued ? "Could not reach server. Set queued for sync." : result.error ?? "Could not log set.";
+        const actionError = result.ok ? undefined : result.error;
+        const message = queued ? "Could not reach server. Set queued for sync." : actionError ?? "Could not log set.";
         setError(message);
         if (queued) {
           toast.success(message);
@@ -407,7 +421,7 @@ export function SetLoggerCard({
         return;
       }
 
-      setSets((current) => current.map((item) => (item.id === pendingId ? result.set! : item)));
+      setSets((current) => current.map((item) => (item.id === pendingId ? result.data!.set : item)));
       toast.success("Set logged.");
     } catch {
       const queued = await enqueueSetLog({

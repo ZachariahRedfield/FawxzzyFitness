@@ -143,3 +143,11 @@ This file is a project-local inbox for suggestions that should be upstreamed int
 - Rationale: Completed records should communicate finality and avoid accidental “resume session” behavior while still allowing intentional note/day-name corrections.
 - Evidence: src/app/history/page.tsx, src/app/history/[sessionId]/page.tsx, src/app/history/[sessionId]/LogAuditClient.tsx
 - Status: Proposed
+
+## 2026-02-23 — Standardize server-action mutation contract and keep redirects for navigation
+- Type: Guardrail
+- Summary: Use a single mutation return shape (`ActionResult<T>`) for server actions and use redirects only for intentional navigation outcomes, not as error transport.
+- Suggested Playbook File: patterns/backend/server-actions.md
+- Rationale: A shared action contract keeps client adapters/toasts simple and predictable, while avoiding redirect-coupled error handling in mutation flows.
+- Evidence: src/lib/action-result.ts, src/app/session/[id]/page.tsx, src/components/SessionExerciseFocus.tsx, src/components/SessionAddExerciseForm.tsx, src/components/SessionHeaderControls.tsx, src/components/SessionTimers.tsx, src/lib/action-feedback.ts
+- Status: Proposed

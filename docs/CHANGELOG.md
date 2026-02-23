@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Changed
+WHAT:
+- Standardized Session feature server-action mutation results on `ActionResult<T>` (`{ ok: true, data?: T } | { ok: false, error: string }`) and removed mutation error redirects from skip toggles in favor of returned action errors.
+- Updated Session client action adapters (save, add/remove exercise, skip toggle, set logging) to consume the unified action result shape with existing toast feedback.
+- Codified the action-result + redirect guardrail in local architecture docs.
+WHY:
+- A single mutation contract improves predictability across server/client boundaries, minimizes ad hoc action typing, and keeps redirects reserved for true navigation outcomes.
+
 
 ### Fixed
 WHAT:

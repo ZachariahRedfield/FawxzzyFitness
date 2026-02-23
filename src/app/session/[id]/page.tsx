@@ -1,5 +1,5 @@
 import { revalidatePath } from "next/cache";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { SessionExerciseFocus } from "@/components/SessionExerciseFocus";
 import { BackButton } from "@/components/ui/BackButton";
 import { SessionHeaderControls } from "@/components/SessionHeaderControls";
@@ -8,6 +8,7 @@ import { ActionFeedbackToasts } from "@/components/ActionFeedbackToasts";
 import { tapFeedbackClass } from "@/components/ui/interactionClasses";
 import { createCustomExerciseAction, deleteCustomExerciseAction, renameCustomExerciseAction } from "@/app/actions/exercises";
 import { requireUser } from "@/lib/auth";
+import type { ActionResult } from "@/lib/action-result";
 import { listExercises } from "@/lib/exercises";
 import { getSessionTargets, type DisplayTarget } from "@/lib/session-targets";
 import { LocalDateTime } from "@/components/ui/LocalDateTime";
@@ -62,7 +63,6 @@ type PageProps = {
     id: string;
   };
   searchParams?: {
-    error?: string;
     exerciseId?: string;
   };
 };
@@ -77,7 +77,7 @@ async function addSetAction(payload: {
   rpe: number | null;
   notes: string | null;
   clientLogId?: string;
-}) {
+}): Promise<ActionResult<{ set: SetRow }>> {
   "use server";
 
   const user = await requireUser();
@@ -108,7 +108,7 @@ async function addSetAction(payload: {
       .maybeSingle();
 
     if (!existingByClientLogIdError && existingByClientLogId) {
-      return { ok: true, set: existingByClientLogId as SetRow };
+      return { ok: true, data: { set: existingByClientLogId as SetRow } };
     }
   }
 
@@ -156,7 +156,7 @@ async function addSetAction(payload: {
       .single();
 
     if (!error && insertedSet) {
-      return { ok: true, set: insertedSet as SetRow };
+      return { ok: true, data: { set: insertedSet as SetRow } };
     }
 
     if (error?.code !== "23505") {
@@ -182,7 +182,7 @@ async function syncQueuedSetLogsAction(payload: {
       notes: string | null;
     };
   }>;
-}) {
+}): Promise<ActionResult<{ results: Array<{ queueItemId: string; ok: boolean; serverSetId?: string; error?: string }> }>> {
   "use server";
 
   const results = await Promise.all(
@@ -202,16 +202,16 @@ async function syncQueuedSetLogsAction(payload: {
       return {
         queueItemId: item.id,
         ok: insertResult.ok,
-        serverSetId: insertResult.set?.id,
-        error: insertResult.error,
+        serverSetId: insertResult.ok ? insertResult.data?.set.id : undefined,
+        error: insertResult.ok ? undefined : insertResult.error,
       };
     }),
   );
 
-  return { ok: true, results };
+  return { ok: true, data: { results } };
 }
 
-async function toggleSkipAction(formData: FormData) {
+async function toggleSkipAction(formData: FormData): Promise<ActionResult> {
   "use server";
 
   const user = await requireUser();
@@ -222,7 +222,7 @@ async function toggleSkipAction(formData: FormData) {
   const nextSkipped = formData.get("nextSkipped") === "true";
 
   if (!sessionId || !sessionExerciseId) {
-    redirect(`/session/${sessionId}?error=${encodeURIComponent("Missing skip info")}`);
+    return { ok: false, error: "Missing skip info" };
   }
 
   const { error } = await supabase
@@ -233,13 +233,14 @@ async function toggleSkipAction(formData: FormData) {
     .eq("session_id", sessionId);
 
   if (error) {
-    redirect(`/session/${sessionId}?error=${encodeURIComponent(error.message)}`);
+    return { ok: false, error: error.message };
   }
 
   revalidatePath(`/session/${sessionId}`);
+  return { ok: true };
 }
 
-async function addExerciseAction(formData: FormData) {
+async function addExerciseAction(formData: FormData): Promise<ActionResult> {
   "use server";
 
   const user = await requireUser();
@@ -271,10 +272,10 @@ async function addExerciseAction(formData: FormData) {
   }
 
   revalidatePath(`/session/${sessionId}`);
-  return { ok: true, message: "Exercise added." };
+  return { ok: true };
 }
 
-async function removeExerciseAction(formData: FormData) {
+async function removeExerciseAction(formData: FormData): Promise<ActionResult> {
   "use server";
 
   const user = await requireUser();
@@ -299,7 +300,7 @@ async function removeExerciseAction(formData: FormData) {
   }
 
   revalidatePath(`/session/${sessionId}`);
-  return { ok: true, message: "Exercise removed." };
+  return { ok: true };
 }
 
 async function persistDurationAction(payload: { sessionId: string; durationSeconds: number }) {
@@ -326,7 +327,7 @@ async function persistDurationAction(payload: { sessionId: string; durationSecon
   return { ok: true };
 }
 
-async function saveSessionAction(formData: FormData) {
+async function saveSessionAction(formData: FormData): Promise<ActionResult> {
   "use server";
 
   const user = await requireUser();
@@ -356,7 +357,7 @@ async function saveSessionAction(formData: FormData) {
 
   revalidatePath("/today");
   revalidatePath("/history");
-  return { ok: true, message: "Workout saved." };
+  return { ok: true };
 }
 
 export default async function SessionPage({ params, searchParams }: PageProps) {
@@ -421,7 +422,6 @@ export default async function SessionPage({ params, searchParams }: PageProps) {
       </div>
       <p className="rounded-md bg-white p-3 text-sm shadow-sm"><LocalDateTime value={sessionRow.performed_at} /></p>
 
-      {searchParams?.error ? <p className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">{searchParams.error}</p> : null}
       <ActionFeedbackToasts />
 
       <details className="rounded-md">
