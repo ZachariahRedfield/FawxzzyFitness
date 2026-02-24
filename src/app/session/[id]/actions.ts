@@ -282,7 +282,8 @@ export async function saveSessionAction(formData: FormData): Promise<ActionResul
     .from("sessions")
     .update({ duration_seconds: durationSeconds, status: "completed" })
     .eq("id", sessionId)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .eq("status", "in_progress");
 
   if (error) {
     return { ok: false, error: error.message };

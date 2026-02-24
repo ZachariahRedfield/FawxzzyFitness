@@ -5,6 +5,16 @@
 
 ### Changed
 WHAT:
+- Updated Today/day-resolution logic to use the active routine timezone consistently for both session start and daily card selection, and adjusted the Today "Completed" badge to hide while a new in-progress session exists.
+- Updated History card/details labels to prefer the current routine-day name and switched history timestamps to client-local rendering.
+- Expanded History log Edit mode to support exercise-level edits, including changing exercise selection, adding exercises, and removing exercises from completed logs.
+- Updated routine edit-day behavior to preserve custom day names on routine saves and keep existing day exercises visible even when a day is marked as rest.
+WHY:
+- These changes fix reported day-rollover/time-display correctness issues and align history/today behavior with real logged state while preserving small-diff server-action architecture.
+
+
+### Changed
+WHAT:
 - Made active session timers resilient to app background/close by restoring running state from local session storage and persisting elapsed time when the app is hidden or closed.
 - Added per-exercise target weight unit selection (kg/lbs) when adding routine-day exercises, and surfaced that unit in day/session target text.
 - Added per-set weight unit selection (kg/lbs) in the current-session set logger and saved the chosen unit with each set log (including offline queue payloads).

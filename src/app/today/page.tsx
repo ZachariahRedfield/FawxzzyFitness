@@ -28,7 +28,7 @@ async function startSessionAction() {
 
   const { data: activeRoutine, error: routineError } = await supabase
     .from("routines")
-    .select("id, name, cycle_length_days, start_date")
+    .select("id, name, cycle_length_days, start_date, timezone")
     .eq("id", profile.active_routine_id)
     .eq("user_id", user.id)
     .single();
@@ -40,7 +40,7 @@ async function startSessionAction() {
   const { dayIndex: routineDayIndex } = getRoutineDayComputation({
     cycleLengthDays: activeRoutine.cycle_length_days,
     startDate: activeRoutine.start_date,
-    profileTimeZone: profile.timezone,
+    profileTimeZone: activeRoutine.timezone,
   });
 
   const { data: routineDay, error: routineDayError } = await supabase
@@ -133,7 +133,7 @@ export default async function TodayPage({ searchParams }: { searchParams?: { err
         const { dayIndex } = getRoutineDayComputation({
           cycleLengthDays: activeRoutine.cycle_length_days,
           startDate: activeRoutine.start_date,
-          profileTimeZone: profile.timezone,
+          profileTimeZone: activeRoutine.timezone,
         });
 
         todayDayIndex = dayIndex;
@@ -243,7 +243,7 @@ export default async function TodayPage({ searchParams }: { searchParams?: { err
           <OfflineSyncBadge />
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-lg font-semibold text-text">{todayPayload.routine.name}: {todayPayload.routine.isRest ? `REST DAY — ${todayPayload.routine.dayName}` : todayPayload.routine.dayName}</h2>
-            {todayPayload.completedTodayCount > 0 ? <p className="inline-flex rounded-full border border-emerald-400/35 bg-emerald-400/15 px-2.5 py-1 text-xs font-semibold text-emerald-200">Completed</p> : null}
+            {todayPayload.completedTodayCount > 0 && !todayPayload.inProgressSessionId ? <p className="inline-flex rounded-full border border-emerald-400/35 bg-emerald-400/15 px-2.5 py-1 text-xs font-semibold text-emerald-200">Completed</p> : null}
           </div>
 
           <ul className="space-y-1 text-sm">

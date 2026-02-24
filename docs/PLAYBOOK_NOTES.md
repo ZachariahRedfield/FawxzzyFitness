@@ -167,3 +167,11 @@ This file is a project-local inbox for suggestions that should be upstreamed int
 - Rationale: Timer continuity is user-critical session state and should not reset when the app is closed or backgrounded.
 - Evidence: src/components/SessionTimers.tsx
 - Status: Proposed
+
+## 2026-02-24 — Use routine timezone (not profile timezone) for day-index session resolution
+- Type: Guardrail
+- Summary: When computing routine day-index for "today" and session start, source timezone from the active routine configuration to avoid day rollover drift between profile defaults and routine-local scheduling.
+- Suggested Playbook File: patterns/timezone-determinism.md
+- Rationale: Mixed timezone sources can show the wrong training day and incorrectly advance session cards before the user’s intended local routine day.
+- Evidence: src/app/today/page.tsx, src/lib/routines.ts
+- Status: Proposed

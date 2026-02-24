@@ -177,54 +177,54 @@ export default async function RoutineDayEditorPage({ params, searchParams }: Pag
 
       {(day as RoutineDayRow).is_rest ? (
         <p className="rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-500">Rest day enabled. Routine exercises stay saved but are ignored until you turn rest day off.</p>
-      ) : (
-        <>
-          <ul className="space-y-1">
-            {dayExercises.map((exercise) => (
-              <li key={exercise.id} className="flex items-center justify-between rounded-md bg-white px-3 py-2 text-xs shadow-sm">
-                <span>
-                  {exerciseNameMap.get(exercise.exercise_id) ?? exercise.exercise_id}
-                  {" "}
-                  ({formatExerciseTargetSummary({
-                    sets: exercise.target_sets,
-                    repsMin: exercise.target_reps_min,
-                    repsMax: exercise.target_reps_max,
-                    repsFallback: exercise.target_reps,
-                    weight: exercise.target_weight,
-                    durationSeconds: exercise.target_duration_seconds,
-                    weightUnit: exercise.target_weight_unit ?? (routine as RoutineRow).weight_unit,
-                  }) || "No target"})
-                </span>
-                <form action={deleteRoutineDayExerciseAction}>
-                  <input type="hidden" name="routineId" value={params.id} />
-                  <input type="hidden" name="routineDayId" value={params.dayId} />
-                  <input type="hidden" name="exerciseRowId" value={exercise.id} />
-                  <button type="submit" className="text-red-600">Remove</button>
-                </form>
-              </li>
-            ))}
-          </ul>
+      ) : null}
 
-          <CollapsibleCard title="Add exercises" summary={`${dayExercises.length} added`} defaultOpen={false}>
-            <form action={addRoutineDayExerciseAction} className="space-y-2">
+      <ul className="space-y-1">
+        {dayExercises.map((exercise) => (
+          <li key={exercise.id} className="flex items-center justify-between rounded-md bg-white px-3 py-2 text-xs shadow-sm">
+            <span>
+              {exerciseNameMap.get(exercise.exercise_id) ?? exercise.exercise_id}
+              {" "}
+              ({formatExerciseTargetSummary({
+                sets: exercise.target_sets,
+                repsMin: exercise.target_reps_min,
+                repsMax: exercise.target_reps_max,
+                repsFallback: exercise.target_reps,
+                weight: exercise.target_weight,
+                durationSeconds: exercise.target_duration_seconds,
+                weightUnit: exercise.target_weight_unit ?? (routine as RoutineRow).weight_unit,
+              }) || "No target"})
+            </span>
+            <form action={deleteRoutineDayExerciseAction}>
               <input type="hidden" name="routineId" value={params.id} />
               <input type="hidden" name="routineDayId" value={params.dayId} />
-              <ExercisePicker exercises={exerciseOptions} name="exerciseId" initialSelectedId={searchParams?.exerciseId} />
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                <input type="number" min={1} name="targetSets" placeholder="Sets" required className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
-                <input type="number" min={1} name="targetRepsMin" placeholder="Min reps" className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
-                <input type="number" min={1} name="targetRepsMax" placeholder="Max reps" className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
-                <input type="number" min={0} step="0.5" name="targetWeight" placeholder={`Weight (${(routine as RoutineRow).weight_unit})`} className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
-                <select name="targetWeightUnit" defaultValue={(routine as RoutineRow).weight_unit} className="rounded-md border border-slate-300 px-3 py-2 text-sm">
-                  <option value="lbs">lbs</option>
-                  <option value="kg">kg</option>
-                </select>
-                <input name="targetDuration" placeholder="Time (sec or mm:ss)" className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
-              </div>
-              <button type="submit" className="w-full rounded-md bg-accent px-3 py-2 text-sm text-white transition-colors hover:bg-accent-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25">Add Exercise</button>
+              <input type="hidden" name="exerciseRowId" value={exercise.id} />
+              <button type="submit" className="text-red-600">Remove</button>
             </form>
-          </CollapsibleCard>
-        </>
+          </li>
+        ))}
+      </ul>
+
+      {(day as RoutineDayRow).is_rest ? null : (
+        <CollapsibleCard title="Add exercises" summary={`${dayExercises.length} added`} defaultOpen={false}>
+          <form action={addRoutineDayExerciseAction} className="space-y-2">
+            <input type="hidden" name="routineId" value={params.id} />
+            <input type="hidden" name="routineDayId" value={params.dayId} />
+            <ExercisePicker exercises={exerciseOptions} name="exerciseId" initialSelectedId={searchParams?.exerciseId} />
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <input type="number" min={1} name="targetSets" placeholder="Sets" required className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
+              <input type="number" min={1} name="targetRepsMin" placeholder="Min reps" className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
+              <input type="number" min={1} name="targetRepsMax" placeholder="Max reps" className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
+              <input type="number" min={0} step="0.5" name="targetWeight" placeholder={`Weight (${(routine as RoutineRow).weight_unit})`} className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
+              <select name="targetWeightUnit" defaultValue={(routine as RoutineRow).weight_unit} className="rounded-md border border-slate-300 px-3 py-2 text-sm">
+                <option value="lbs">lbs</option>
+                <option value="kg">kg</option>
+              </select>
+              <input name="targetDuration" placeholder="Time (sec or mm:ss)" className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
+            </div>
+            <button type="submit" className="w-full rounded-md bg-accent px-3 py-2 text-sm text-white transition-colors hover:bg-accent-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25">Add Exercise</button>
+          </form>
+        </CollapsibleCard>
       )}
     </section>
   );

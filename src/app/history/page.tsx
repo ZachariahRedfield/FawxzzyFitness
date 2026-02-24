@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { AppNav } from "@/components/AppNav";
+import { LocalDateTime } from "@/components/ui/LocalDateTime";
 import { Glass } from "@/components/ui/Glass";
 import { listShellClasses } from "@/components/ui/listShellClasses";
 import { requireUser } from "@/lib/auth";
-import { formatDateTime } from "@/lib/datetime";
 import { supabaseServer } from "@/lib/supabase/server";
 import type { SessionRow } from "@/types/db";
 
@@ -93,6 +93,20 @@ export default async function HistoryPage({
       ? encodeCursor({ performedAt: lastSession.performed_at, id: lastSession.id })
       : null;
 
+  const routineIds = Array.from(new Set(sessions.map((session) => session.routine_id).filter((routineId): routineId is string => Boolean(routineId))));
+  const { data: routineDaysData } = routineIds.length
+    ? await supabase
+        .from("routine_days")
+        .select("routine_id, day_index, name")
+        .eq("user_id", user.id)
+        .in("routine_id", routineIds)
+    : { data: [] };
+
+  const dayNameByRoutineAndIndex = new Map<string, string>();
+  for (const row of routineDaysData ?? []) {
+    dayNameByRoutineAndIndex.set(`${row.routine_id}:${row.day_index}`, row.name ?? "");
+  }
+
   return (
     <section className="space-y-4">
       <AppNav />
@@ -103,7 +117,10 @@ export default async function HistoryPage({
             <li key={session.id} className={listShellClasses.card}>
               <div className="mb-2 flex items-center justify-between gap-2">
                 <span className="rounded-full border border-slate-300 bg-slate-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                  {(session.name || "Session")} Log #{sessions.length - index}: {session.day_name_override || session.routine_day_name || (session.routine_day_index ? `Day ${session.routine_day_index}` : "Day")}
+                  {(session.name || "Session")} Log #{sessions.length - index}: {session.day_name_override
+                    || (session.routine_id && session.routine_day_index ? dayNameByRoutineAndIndex.get(`${session.routine_id}:${session.routine_day_index}`) : null)
+                    || session.routine_day_name
+                    || (session.routine_day_index ? `Day ${session.routine_day_index}` : "Day")}
                 </span>
                 <form action={deleteSessionAction}>
                   <input type="hidden" name="sessionId" value={session.id} />
@@ -116,7 +133,7 @@ export default async function HistoryPage({
                 </form>
               </div>
 
-              <p className="text-xs text-slate-500">{formatDateTime(session.performed_at)}</p>
+              <p className="text-xs text-slate-500"><LocalDateTime value={session.performed_at} /></p>
 
               <div className="mt-3">
                 <Link

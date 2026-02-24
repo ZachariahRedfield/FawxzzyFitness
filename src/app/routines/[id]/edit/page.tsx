@@ -68,7 +68,7 @@ async function updateRoutineAction(formData: FormData) {
 
   const { data: existingRoutine } = await supabase
     .from("routines")
-    .select("cycle_length_days")
+    .select("cycle_length_days, start_date")
     .eq("id", routineId)
     .eq("user_id", user.id)
     .single();
@@ -130,10 +130,11 @@ async function updateRoutineAction(formData: FormData) {
   }
 
   const dayNameUpdates = getRoutineDayNamesFromStartDate(cycleLengthDays, startDate);
+  const previousGeneratedDayNames = getRoutineDayNamesFromStartDate(existingRoutine.cycle_length_days, existingRoutine.start_date);
 
   const { data: existingDayRows, error: existingDayRowsError } = await supabase
     .from("routine_days")
-    .select("id, day_index")
+    .select("id, day_index, name")
     .eq("routine_id", routineId)
     .eq("user_id", user.id);
 
@@ -144,6 +145,15 @@ async function updateRoutineAction(formData: FormData) {
   for (const day of existingDayRows ?? []) {
     const nextName = dayNameUpdates[day.day_index - 1];
     if (!nextName) continue;
+
+    const fallback = `Day ${day.day_index}`;
+    const currentName = (day.name ?? "").trim();
+    const previousGeneratedName = previousGeneratedDayNames[day.day_index - 1] ?? fallback;
+    const shouldAutoRename = !currentName
+      || currentName.toLowerCase() === fallback.toLowerCase()
+      || currentName.toLowerCase() === previousGeneratedName.toLowerCase();
+
+    if (!shouldAutoRename) continue;
 
     const { error: renameDayError } = await supabase
       .from("routine_days")
