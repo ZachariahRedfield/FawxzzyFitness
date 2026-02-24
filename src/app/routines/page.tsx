@@ -257,10 +257,12 @@ export default async function RoutinesPage() {
                     type="submit"
                     disabled={isActive}
                     className={`mt-3 w-full rounded-md px-3 py-2 text-sm ${
-                      isActive ? "border border-accent bg-accent/10 font-semibold text-accent" : "border border-slate-400 bg-white text-slate-700"
+                      isActive
+                        ? "border border-accent bg-accent/10 font-semibold text-accent"
+                        : "border border-slate-300 bg-slate-100 text-slate-600"
                     }`}
                   >
-                    {isActive ? "Active" : "Set Active"}
+                    {isActive ? "Active" : "Inactive"}
                   </button>
                 </form>
               </li>

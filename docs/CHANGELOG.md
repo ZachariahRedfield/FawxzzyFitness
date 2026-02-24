@@ -10,6 +10,12 @@ WHY:
 
 ### Changed
 WHAT:
+- Updated the routines status button copy to show `Active` or `Inactive` for each routine card while retaining the existing active-state behavior and emphasis hierarchy.
+WHY:
+- This makes routine status clearer at a glance and aligns inactive-state wording with the active-state label without changing mutation behavior.
+
+### Changed
+WHAT:
 - Added a compact live clock above the top navigation card that shows local hour/minute with AM/PM in a subtle Apple-inspired style.
 WHY:
 - This provides an always-visible time reference at the top of the app without adding visual weight or disrupting the existing navigation layout.
