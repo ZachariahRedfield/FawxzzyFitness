@@ -1,5 +1,13 @@
 ### Changed
 WHAT:
+- Increased filter-chip state contrast in the Add Exercise picker so selected tags are visually stronger and unselected tags appear more muted/greyed.
+- Smoothed Add Exercise list scrolling by debouncing persisted scroll-position updates instead of updating URL-state-linked UI state on every scroll event.
+WHY:
+- The previous selected/unselected filter styles were too subtle to scan quickly on mobile.
+- Reducing high-frequency rerenders during scrolling removes visible jank in long exercise lists while keeping return-position behavior.
+
+### Changed
+WHAT:
 - Updated the exercise picker filter controls to use a dedicated clickable Filter card with an Open/Close status tag, expandable tag list visibility, and clearer selected/unselected tag states.
 - Kept tag filtering multi-select so users can combine multiple tags when narrowing the exercise list.
 WHY:

@@ -89,6 +89,7 @@ export function ExercisePicker({ exercises, name, initialSelectedId }: ExerciseP
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const scrollContainerRef = useRef<HTMLUListElement | null>(null);
+  const scrollPersistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const uniqueExercises = useMemo(() => {
     const seenNames = new Set<string>();
@@ -113,6 +114,14 @@ export function ExercisePicker({ exercises, name, initialSelectedId }: ExerciseP
 
     scrollContainerRef.current.scrollTop = scrollTop;
   }, [scrollTop]);
+
+  useEffect(() => {
+    return () => {
+      if (scrollPersistTimerRef.current) {
+        clearTimeout(scrollPersistTimerRef.current);
+      }
+    };
+  }, []);
 
   const returnTo = useMemo(() => {
     const nextParams = new URLSearchParams(searchParams.toString());
@@ -194,7 +203,7 @@ export function ExercisePicker({ exercises, name, initialSelectedId }: ExerciseP
           className="flex w-full items-center justify-between rounded-lg border border-slate-300 bg-[rgb(var(--bg)/0.4)] px-3 py-2 text-left transition-colors hover:border-accent/70"
         >
           <span className="text-sm font-medium text-[rgb(var(--text))]">Filter</span>
-          <span className={`rounded-full border px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide ${isFiltersOpen ? "border-accent bg-accent text-white" : "border-border bg-surface-2-soft text-muted"}`}>
+          <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide transition-colors ${isFiltersOpen ? "border-accent bg-accent text-white shadow-[0_0_0_1px_rgba(255,255,255,0.2)_inset]" : "border-slate-400 bg-slate-200 text-slate-700"}`}>
             {isFiltersOpen ? "Close" : "Open"}
           </span>
         </button>
@@ -204,7 +213,7 @@ export function ExercisePicker({ exercises, name, initialSelectedId }: ExerciseP
             <button
               type="button"
               onClick={() => setSelectedTags([])}
-              className={`shrink-0 rounded-full border px-2 py-1 text-[11px] font-medium transition-colors ${selectedTags.length === 0 ? "border-accent bg-accent text-white" : "border-slate-300 bg-slate-200 text-slate-600 hover:border-accent/70"}`}
+              className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-colors ${selectedTags.length === 0 ? "border-accent bg-accent text-white shadow-[0_0_0_1px_rgba(255,255,255,0.18)_inset]" : "border-slate-300 bg-slate-100 text-slate-500 opacity-80 hover:border-slate-400 hover:opacity-100"}`}
             >
               All
             </button>
@@ -223,7 +232,7 @@ export function ExercisePicker({ exercises, name, initialSelectedId }: ExerciseP
                       return [...prev, tag.value];
                     });
                   }}
-                  className={`shrink-0 rounded-full border px-2 py-1 text-[11px] font-medium transition-colors ${isSelected ? "border-accent bg-accent text-white" : "border-slate-300 bg-slate-200 text-slate-600 hover:border-accent/70"}`}
+                  className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-colors ${isSelected ? "border-accent bg-accent text-white shadow-[0_0_0_1px_rgba(255,255,255,0.18)_inset]" : "border-slate-300 bg-slate-100 text-slate-500 opacity-80 hover:border-slate-400 hover:opacity-100"}`}
                 >
                   {tag.label}
                 </button>
@@ -256,7 +265,16 @@ export function ExercisePicker({ exercises, name, initialSelectedId }: ExerciseP
       <div className="relative">
         <ul
           ref={scrollContainerRef}
-          onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
+          onScroll={(event) => {
+            const nextTop = Math.round(event.currentTarget.scrollTop);
+            if (scrollPersistTimerRef.current) {
+              clearTimeout(scrollPersistTimerRef.current);
+            }
+
+            scrollPersistTimerRef.current = setTimeout(() => {
+              setScrollTop(nextTop);
+            }, 110);
+          }}
           className="max-h-52 space-y-2 overflow-y-auto rounded-lg border border-slate-300/80 bg-[rgb(var(--bg)/0.25)] p-2 pr-1"
         >
           {filteredExercises.map((exercise) => {
