@@ -1,3 +1,10 @@
+### Changed
+WHAT:
+- Completed a full architecture and data-model audit of the exercise image system, including resolution order, source-of-truth validation, slug/file invariants, schema constraints, and PWA/offline implications.
+- Recorded a minimal-diff hardening plan focused on deterministic image contracts (canonical slug ownership, metadata-path guardrails, and lightweight validation checks) before adding new media coverage.
+WHY:
+- Expansion work on exercise media is safer when current behavior and constraints are explicit; documenting the audit findings prevents architectural drift and keeps upcoming changes compliant with project governance.
+
 ### Fixed
 WHAT:
 - Restored the Exercise Info button to open the dedicated route-based Exercise info screen instead of the inline modal/overlay in ExercisePicker.

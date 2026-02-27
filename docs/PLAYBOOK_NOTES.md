@@ -1,3 +1,11 @@
+## 2026-02-27 — Keep exercise media resolution anchored to one canonical slug contract
+- Type: Guardrail
+- Summary: For static exercise imagery, derive runtime icon paths from one canonical slug source (persisted `slug` for global rows, deterministic name fallback only for legacy/custom rows) and reject non-root-relative or placeholder-sentinel media paths at the boundary.
+- Suggested Playbook File: patterns/asset-contracts.md
+- Rationale: Mixed path/slug/name precedence silently creates drift between DB metadata and `/public` assets, which makes offline/PWA behavior less predictable and increases broken-image regressions.
+- Evidence: src/lib/exerciseImages.ts, src/app/exercises/[exerciseId]/page.tsx, supabase/migrations/019_exercise_metadata_defaults_and_constraints.sql, supabase/data/global_exercises_canonical.json
+- Status: Proposed
+
 # Playbook Notes (Local Inbox)
 
 ## 2026-02-27 — Detail routes should tolerate catalog/data rollout mismatch
