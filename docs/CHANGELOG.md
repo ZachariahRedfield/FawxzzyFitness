@@ -1824,3 +1824,23 @@ WHAT:
 - Tightened nav vertical spacing while preserving consistent 44px tab targets and shared glass header styling.
 WHY:
 - Prevents top navigation from being obscured by iOS status/notch/Dynamic Island areas and removes duplicate/competing top offsets that made the bar sit too low.
+
+### Fixed
+WHAT:
+- Standardized main-tab screen spacing under the glass NavBar by introducing one shared top-level tab wrapper used by Today, Routines, History, and Settings.
+- Removed History’s page-specific spacing drift so the first History content panel aligns to the same vertical rhythm as the other main tabs.
+WHY:
+- Keeps tab-to-tab navigation visually consistent and prevents subtle top-gap mismatch beneath the shared NavBar while preserving safe-area behavior.
+
+### Fixed
+WHAT:
+- Applied the same shared main-tab spacing contract to History → Exercises so it aligns beneath the glass NavBar like History Sessions and the other primary tabs.
+WHY:
+- Eliminates remaining top-gap inconsistency between History tabs and keeps tab switching visually stable.
+
+### Fixed
+WHAT:
+- Re-applied the History top-spacing normalization on both History tabs (Sessions and Exercises) so each page uses the same NavBar-to-content spacing rhythm.
+WHY:
+- Prevents regression drift where History tab surfaces can appear with a mismatched thin top gap compared with the standardized main-tab spacing.
+

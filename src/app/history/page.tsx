@@ -96,7 +96,7 @@ export default async function HistoryPage({
   }));
 
   return (
-    <section className="flex h-[100dvh] min-h-0 flex-col gap-4 overflow-hidden">
+    <section className="flex h-[100dvh] min-h-0 flex-col space-y-3 overflow-hidden">
       <AppNav />
 
       <div className="flex min-h-0 flex-1 flex-col px-1">

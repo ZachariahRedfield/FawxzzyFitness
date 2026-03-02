@@ -22,7 +22,7 @@ export default async function HistoryExercisesPage() {
     const rows = await getExercisesWithStatsForUser();
 
     return (
-      <section className="flex h-[100dvh] min-h-0 flex-col gap-4 overflow-hidden">
+      <section className="flex h-[100dvh] min-h-0 flex-col space-y-3 overflow-hidden">
         <AppNav />
 
         <div className="flex min-h-0 flex-1 flex-col px-1">
@@ -41,7 +41,7 @@ export default async function HistoryExercisesPage() {
     console.error("[history/exercises] failed to load exercise stats", error);
 
     return (
-      <section className="space-y-4">
+      <section className="space-y-3">
         <AppNav />
         <ExercisesBrowserError />
       </section>
